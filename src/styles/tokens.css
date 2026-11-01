@@ -1,0 +1,53 @@
+/* 晏銘湛箴 design tokens — 原色不得更動 */
+:root {
+  --hit: 44px;
+  --hit-gap: 0px;
+  --icon-gap: 8px;
+  --radius: 12px;
+  --font: "Segoe UI", "Microsoft YaHei", "PingFang TC", "Noto Sans TC", sans-serif;
+}
+
+:root,
+[data-palette="A"][data-mode="light"] {
+  --bg: #F8F6EF;
+  --surface: #F4DDE7;
+  --raised: #B9DDF1;
+  --accent: #CDBFE0;
+  --ink: #221F14;
+  --on-accent: #221F14;
+  --muted: #5c574c;
+  --line: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+[data-palette="A"][data-mode="dark"] {
+  --bg: #191C29;
+  --surface: #1E3029;
+  --raised: #4A3528;
+  --accent: #9FA98F;
+  --ink: #E2E4ED;
+  --on-accent: #191C29;
+  --muted: #9aa0b0;
+  --line: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+[data-palette="B"][data-mode="light"] {
+  --bg: #E8E3CC;
+  --surface: #B7C8A8;
+  --raised: #CBBF9E;
+  --accent: #A38E7A;
+  --ink: #221F14;
+  --on-accent: #221F14;
+  --muted: #5a5348;
+  --line: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+[data-palette="B"][data-mode="dark"] {
+  --bg: #1A1C29;
+  --surface: #31263A;
+  --raised: #333A4E;
+  --accent: #95A7B7;
+  --ink: #E2E4ED;
+  --on-accent: #1A1C29;
+  --muted: #9aa0b0;
+  --line: color-mix(in srgb, var(--ink) 16%, transparent);
+}

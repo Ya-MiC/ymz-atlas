@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-palette="A" data-mode="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>星圖 Atlas · 晏銘湛箴</title>
+<meta name="description" content="本機資料宇宙視覺化：星雲圖、樹圖、等高線。Vue 3 + Tauri 2 + Rust。本地優先，不上傳。" />
+<meta property="og:title" content="星圖 Atlas · 晏銘湛箴" />
+<meta property="og:description" content="把硬碟變成可漫遊的資料宇宙。本地優先 · MIT · 可商用審美。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #191C29; --surface: #1E3029; --raised: #4A3528; --accent: #9FA98F;
+    --ink: #E2E4ED; --on-accent: #191C29; --muted: #9aa0b0;
+    --line: color-mix(in srgb, var(--ink) 16%, transparent);
+    --hit: 44px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Noto Sans TC", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, color-mix(in srgb, var(--raised) 35%, transparent), transparent 55%),
+      var(--bg);
+    color: var(--ink); line-height: 1.6; min-height: 100vh;
+  }
+  a { color: inherit; }
+  .wrap { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 0; position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom: 1px solid transparent;
+  }
+  .mark { display: flex; gap: 12px; align-items: center; text-decoration: none; }
+  .glyph {
+    width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--surface); color: var(--accent); font-size: 18px;
+    box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .mark b { font-size: 15px; letter-spacing: 0.2px; }
+  .mark span { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+  nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .navlink {
+    text-decoration: none; color: var(--muted); font-size: 13px; padding: 8px 12px;
+    border-radius: 999px; min-height: var(--hit); display: inline-flex; align-items: center;
+  }
+  .navlink:hover { color: var(--ink); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: var(--hit); padding: 0 18px; border-radius: 999px; text-decoration: none;
+    font-size: 13px; font-weight: 650; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+  .btn:hover { transform: translateY(-1px); }
+
+  .hero { padding: 72px 0 40px; display: grid; gap: 28px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
+  }
+  h1 {
+    font-family: "Instrument Serif", "Noto Serif TC", serif;
+    font-size: clamp(42px, 7vw, 72px); line-height: 1.05; font-weight: 400;
+    max-width: 14ch;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lead { max-width: 42ch; color: var(--muted); font-size: 17px; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+
+  .stage {
+    margin: 28px 0 64px; border: 1px solid var(--line); border-radius: 22px; overflow: hidden;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 80%, transparent), var(--bg));
+    min-height: 360px; position: relative;
+  }
+  .stage-inner { padding: 28px; display: grid; gap: 18px; }
+  .stage-title { font-size: 13px; color: var(--muted); }
+  .viz {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .viz article {
+    border: 1px solid var(--line); border-radius: 16px; padding: 18px; min-height: 180px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+  .viz h3 { font-size: 15px; margin-bottom: 8px; }
+  .viz p { font-size: 13px; color: var(--muted); }
+  .orb {
+    width: 72px; height: 72px; border-radius: 50%; margin: 18px auto 8px;
+    background: radial-gradient(circle at 35% 30%, #fff8, transparent 40%), var(--accent);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 45%, transparent);
+    animation: float 5s ease-in-out infinite;
+  }
+  .bars { display: grid; grid-template-columns: 2fr 1fr 1.4fr; gap: 6px; margin-top: 28px; height: 70px; }
+  .bars i { display: block; border-radius: 6px; background: var(--accent); opacity: .85; }
+  .bars i:nth-child(2) { opacity: .55; }
+  .bars i:nth-child(3) { opacity: .35; }
+  .waves {
+    height: 70px; margin-top: 28px; border-radius: 10px;
+    background:
+      repeating-radial-gradient(circle at 50% 120%, transparent 0 8px, color-mix(in srgb, var(--accent) 35%, transparent) 9px 10px);
+    opacity: .7;
+  }
+  @keyframes float { 50% { transform: translateY(-8px) scale(1.03); } }
+
+  section.block { padding: 28px 0 10px; }
+  section.block h2 {
+    font-family: "Instrument Serif", serif; font-size: 34px; font-weight: 400; margin-bottom: 10px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+  .card {
+    border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+  }
+  .card h3 { font-size: 15px; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--muted); }
+
+  .support {
+    margin: 48px 0; padding: 28px; border-radius: 20px; border: 1px solid var(--line);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--raised) 55%, transparent), color-mix(in srgb, var(--surface) 70%, transparent));
+    display: grid; gap: 12px;
+  }
+  .support h2 { font-family: "Instrument Serif", serif; font-size: 30px; font-weight: 400; }
+  footer {
+    border-top: 1px solid var(--line); padding: 28px 0 48px;
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 820px) {
+    .viz, .grid { grid-template-columns: 1fr; }
+    h1 { max-width: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="mark" href="./">
+        <div class="glyph">◈</div>
+        <div><b>星圖 Atlas</b><span>晏銘湛箴</span></div>
+      </a>
+      <nav>
+        <a class="navlink" href="#features">功能</a>
+        <a class="navlink" href="#stack">技術</a>
+        <a class="navlink" href="#support">支持</a>
+        <a class="navlink" href="https://github.com/Ya-MiC/ymz-atlas" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="btn btn-primary" href="https://github.com/Ya-MiC/ymz-atlas/releases" target="_blank" rel="noreferrer">下載</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="eyebrow">Local-first data universe</div>
+        <h1>把硬碟變成可漫遊的<em>資料宇宙</em></h1>
+        <p class="lead">星雲圖、樹圖、等高線——像 Obsidian / flomo 一樣直覺，卻面向你整台電腦的真實檔案。前端 Vue 3，殼 Tauri 2，掃描引擎 Rust。本地優先，不上傳。</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://github.com/Ya-MiC/ymz-atlas/releases">下載 Windows 版</a>
+          <a class="btn btn-ghost" href="https://github.com/Ya-MiC/ymz-atlas">查看原始碼</a>
+        </div>
+        <div class="meta">
+          <span>MIT License</span>
+          <span>Vue 3 · Tauri 2 · Rust</span>
+          <span>色票家族 A / B · 淺 / 深</span>
+        </div>
+      </div>
+
+      <div class="stage" aria-hidden="true">
+        <div class="stage-inner">
+          <div class="stage-title">三種觀看方式</div>
+          <div class="viz">
+            <article>
+              <h3>✦ 星雲圖</h3>
+              <p>力導向關係圖，資料夾與檔案如星系相連。</p>
+              <div class="orb"></div>
+            </article>
+            <article>
+              <h3>▦ 樹圖</h3>
+              <p>Squarified treemap，一眼看見容量結構。</p>
+              <div class="bars"><i></i><i></i><i></i></div>
+            </article>
+            <article>
+              <h3>〰 等高線</h3>
+              <p>flomo 式日曆熱力 + 地形密度等高線。</p>
+              <div class="waves"></div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <section class="block" id="features">
+        <h2>為信任而做</h2>
+        <p class="lead">掃描、設定、筆記匯入都在你的電腦完成。格式開放：`.atlasvault` / `.atlasnap` / `.atlasmemo`。</p>
+        <div class="grid">
+          <div class="card"><h3>用戶端</h3><p>星雲、樹圖、等高線、主題切換。溫潤介面，熱區 ≥ 44px。</p></div>
+          <div class="card"><h3>管理員端</h3><p>編輯保險庫、排除規則、觸發重掃。本機設定，不當雲端帳密。</p></div>
+          <div class="card"><h3>開源可商用</h3><p>MIT。依賴與審美資產走寬鬆授權路線，服務「晏銘湛箴」長期品牌。</p></div>
+        </div>
+      </section>
+
+      <section class="block" id="stack">
+        <h2>技術棧</h2>
+        <div class="grid">
+          <div class="card"><h3>Vue 3 + Vite + TS</h3><p>桌面 UI 與互動視覺。</p></div>
+          <div class="card"><h3>Tauri 2</h3><p>輕量原生殼，Windows 優先安裝包。</p></div>
+          <div class="card"><h3>Rust 掃描引擎</h3><p>本機走訪目錄、產出版本化快照。</p></div>
+        </div>
+      </section>
+
+      <section class="support" id="support">
+        <h2>支持晏銘湛箴</h2>
+        <p>如果你願意支持這個本地優先的小工具家族，可以用 PayPal 贊助開發。謝謝。</p>
+        <div class="cta">
+          <a class="btn btn-primary"
+             href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=cao417090217%40gmail.com&item_name=Yanming%20Zhanzhen%20Atlas&currency_code=USD"
+             target="_blank" rel="noreferrer">PayPal 贊助</a>
+          <a class="btn btn-ghost" href="mailto:cao417090217@gmail.com">寫信給我</a>
+        </div>
+        <p style="font-size:12px;color:var(--muted)">收款：PayPal · cao417090217@gmail.com</p>
+      </section>
+    </main>
+
+    <footer>
+      <div>© 2026 晏銘湛箴 · 星圖 Atlas</div>
+      <div>
+        <a href="https://github.com/Ya-MiC/ymz-atlas">GitHub</a>
+        ·
+        <a href="https://github.com/Ya-MiC/ymz-atlas/blob/main/formats/SCHEMA.md">格式規範</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

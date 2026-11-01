@@ -16,14 +16,13 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - name: Install
-        run: pnpm install --config.dangerouslyAllowAllBuilds=true
-      - name: Build web
-        run: pnpm exec vite build
+      - run: pnpm install --config.dangerouslyAllowAllBuilds=true
+      - run: pnpm exec vite build
 
   windows-build:
     runs-on: windows-latest
     needs: frontend
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -32,8 +31,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install frontend deps
-        run: pnpm install --config.dangerouslyAllowAllBuilds=true
+      - run: pnpm install --config.dangerouslyAllowAllBuilds=true
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
         env:
@@ -41,6 +39,9 @@ jobs:
         with:
           tagName: app-v__VERSION__
           releaseName: "星圖 Atlas v__VERSION__"
-          releaseBody: "Vue 3 + Tauri 2 + Rust · 本地優先 · PayPal: cao417090217@gmail.com"
+          releaseBody: |
+            $0.99 買斷 · 1.x 免費更新
+            PayPal: cao417090217@gmail.com
+            含星雲圖 / 樹圖 / 等高線
           releaseDraft: true
           prerelease: false

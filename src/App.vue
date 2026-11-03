@@ -14,8 +14,6 @@ import {
   apiGetSnapshot,
   apiGetStatus,
   apiGetVault,
-  apiLicenseActivate,
-  apiLicenseStatus,
   apiRescan,
   apiSaveVault,
   fmtNum,
@@ -24,10 +22,6 @@ import {
   type Vault,
 } from "./api";
 
-const licensed = ref(false);
-const codeInput = ref("");
-const signatureInput = ref("");
-const licenseError = ref("");
 const view = ref<"nebula" | "tree" | "contour" | "admin" | "mv" | "note">("nebula");
 const snapshot = ref<Snapshot | null>(null);
 const vault = reactive<Vault>({
@@ -255,31 +249,10 @@ function refreshContour() {
   });
 }
 
-async function onActivate() {
-  licenseError.value = "";
-  busy.value = true;
-  try {
-    await apiLicenseActivate(codeInput.value.trim(), signatureInput.value.trim() || undefined);
-    licensed.value = true;
-    statusText.value = "已啟用";
-    await loadAll();
-  } catch (e: any) {
-    licenseError.value = e?.message || String(e);
-  } finally {
-    busy.value = false;
-  }
-}
-
 async function loadAll() {
   busy.value = true;
   statusText.value = "讀取資料…";
   try {
-    const lic = await apiLicenseStatus();
-    licensed.value = !!lic.licensed;
-    if (!licensed.value) {
-      statusText.value = "等待兌換啟用";
-      return;
-    }
     const [s, v, st] = await Promise.all([apiGetSnapshot(), apiGetVault(), apiGetStatus()]);
     snapshot.value = s;
     Object.assign(vault, v);
@@ -379,30 +352,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="!licensed" class="shell gate">
-    <div class="card gate-card">
-      <h1>◈ 星圖 Atlas</h1>
-      <p class="hint">¥0.01 買斷 · 支付寶 AI 付 → 授權碼 → 離線驗證 → 啟用</p>
-      <ol class="steps">
-        <li>支付寶 AI 付 ¥0.01（金額由伺服器固定，不接受客戶端篡改）</li>
-        <li>付款完成後取得伺服器簽發的 <b>授權碼</b></li>
-        <li>貼上授權碼，點啟用（離線驗證，不連網上傳使用者資料）</li>
-      </ol>
-      <label class="field"><span>支付寶授權碼</span>
-        <input v-model="codeInput" placeholder="例如 ATLAS-XXXX-…" />
-      </label>
-      <label class="field"><span>Ed25519 簽章（來自支付寶付款頁面）</span>
-        <input v-model="signatureInput" placeholder="選填，用於離線驗證簽章" />
-      </label>
-      <p v-if="licenseError" class="err">{{ licenseError }}</p>
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn" :disabled="busy || !codeInput.trim()" @click="onActivate">啟用</button>
-        <a class="btn ghost" href="https://aipay.alipay.com/products/vibe-pay" target="_blank" rel="noreferrer">支付寶 AI 付 ¥0.01 購買</a>
-        <a class="btn ghost" href="https://ya-mic.github.io/ymz-atlas/authorize.html" target="_blank" rel="noreferrer">官網授權頁</a>
-      </div>
-    </div>
-  </div>
-  <div v-else class="shell">
+  <div class="shell">
     <header class="topbar">
       <div class="brand">
         <span class="logo">◈</span>

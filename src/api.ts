@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { activateLocal, loadLocalLicense, type LicenseRecord } from "./license";
 
 export type Totals = {
   dirs: number;
@@ -152,27 +151,6 @@ export async function apiGetVault(): Promise<Vault> {
 export async function apiSaveVault(vault: Vault): Promise<Vault> {
   if (!isTauri()) return vault;
   return invoke<Vault>("save_vault_cmd", { vault });
-}
-
-export async function apiLicenseStatus(): Promise<{ licensed: boolean; record?: LicenseRecord }> {
-  if (!isTauri()) {
-    const r = loadLocalLicense();
-    return r ? { licensed: true, record: r } : { licensed: false };
-  }
-  return invoke("license_status");
-}
-
-export async function apiLicenseActivate(code: string, signature?: string): Promise<LicenseRecord> {
-  if (!isTauri()) {
-    // 前端模式：直接驗證格式，不連網
-    return activateLocal(undefined, code);
-  }
-  return invoke<LicenseRecord>("license_activate", { code: code || null, signature: signature || null });
-}
-
-/** 已廢棄：前端不再根據訂單號產生授權碼。保留以供未來參考。 */
-export async function apiLicensePreview(_txn: string): Promise<string> {
-  throw new Error("apiLicensePreview 已廢棄：授權碼由支付寶 AI 付伺服器簽發。");
 }
 
 export function fmtSize(b: number) {

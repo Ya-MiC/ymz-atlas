@@ -1,5 +1,7 @@
+mod license;
 mod scanner;
 
+use license::LicenseRecord;
 use scanner::{load_snapshot, load_vault, run_scan, save_snapshot, save_vault, Snapshot, Vault};
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager, State};
@@ -46,8 +48,10 @@ fn get_status(state: State<'_, AppState>) -> serde_json::Value {
         "palette": vault.palette,
         "mode": vault.mode,
         "vaultId": vault.id,
+        "licensed": license::is_licensed(),
         "product": "星圖 Atlas",
         "brand": "晏銘湛箴",
+        "priceUsd": "0.99",
     })
 }
 
@@ -69,11 +73,35 @@ fn do_scan(state: &AppState, trigger: &str) -> Result<Snapshot, String> {
 
 #[tauri::command]
 fn rescan(state: State<'_, AppState>) -> Result<Snapshot, String> {
+    if !license::is_licensed() {
+        return Err("尚未啟用授權，請先兌換".into());
+    }
     do_scan(&state, "manual")
+}
+
+#[tauri::command]
+fn license_status() -> serde_json::Value {
+    match license::load_license() {
+        Some(r) => serde_json::json!({ "licensed": true, "record": r }),
+        None => serde_json::json!({ "licensed": false }),
+    }
+}
+
+#[tauri::command]
+fn license_preview_code(txn: String) -> Result<String, String> {
+    license::code_from_txn(&txn)
+}
+
+#[tauri::command]
+fn license_activate(txn: String, code: Option<String>) -> Result<LicenseRecord, String> {
+    license::activate(&txn, code.as_deref())
 }
 
 fn startup_scan(app: AppHandle) {
     std::thread::spawn(move || {
+        if !license::is_licensed() {
+            return;
+        }
         let state = app.state::<AppState>();
         let need = state.snapshot.lock().unwrap().is_none();
         if need {
@@ -99,7 +127,10 @@ pub fn run() {
             save_vault_cmd,
             get_snapshot,
             get_status,
-            rescan
+            rescan,
+            license_status,
+            license_preview_code,
+            license_activate
         ])
         .setup(|app| {
             startup_scan(app.handle().clone());

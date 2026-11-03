@@ -162,12 +162,12 @@ export async function apiLicenseStatus(): Promise<{ licensed: boolean; record?: 
   return invoke("license_status");
 }
 
-export async function apiLicenseActivate(code: string): Promise<LicenseRecord> {
+export async function apiLicenseActivate(code: string, signature?: string): Promise<LicenseRecord> {
   if (!isTauri()) {
     // 前端模式：直接驗證格式，不連網
     return activateLocal(undefined, code);
   }
-  return invoke<LicenseRecord>("license_activate", { code: code || null });
+  return invoke<LicenseRecord>("license_activate", { code: code || null, signature: signature || null });
 }
 
 /** 已廢棄：前端不再根據訂單號產生授權碼。保留以供未來參考。 */

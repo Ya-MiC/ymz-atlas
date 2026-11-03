@@ -26,6 +26,7 @@ import {
 
 const licensed = ref(false);
 const codeInput = ref("");
+const signatureInput = ref("");
 const licenseError = ref("");
 const view = ref<"nebula" | "tree" | "contour" | "admin" | "mv" | "note">("nebula");
 const snapshot = ref<Snapshot | null>(null);
@@ -258,7 +259,7 @@ async function onActivate() {
   licenseError.value = "";
   busy.value = true;
   try {
-    await apiLicenseActivate(codeInput.value.trim());
+    await apiLicenseActivate(codeInput.value.trim(), signatureInput.value.trim() || undefined);
     licensed.value = true;
     statusText.value = "已啟用";
     await loadAll();
@@ -388,7 +389,10 @@ onUnmounted(() => {
         <li>貼上授權碼，點啟用（離線驗證，不連網上傳使用者資料）</li>
       </ol>
       <label class="field"><span>支付寶授權碼</span>
-        <input v-model="codeInput" placeholder="例如 ATLAS-XXXX-…" @change="refreshPreview" @blur="refreshPreview" />
+        <input v-model="codeInput" placeholder="例如 ATLAS-XXXX-…" />
+      </label>
+      <label class="field"><span>Ed25519 簽章（來自支付寶付款頁面）</span>
+        <input v-model="signatureInput" placeholder="選填，用於離線驗證簽章" />
       </label>
       <p v-if="licenseError" class="err">{{ licenseError }}</p>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">

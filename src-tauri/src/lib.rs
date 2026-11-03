@@ -88,8 +88,8 @@ fn license_status() -> serde_json::Value {
 }
 
 #[tauri::command]
-fn license_activate(code: String) -> Result<LicenseRecord, String> {
-    license::activate(&code)
+fn license_activate(code: String, signature: Option<String>) -> Result<LicenseRecord, String> {
+    license::activate(&code, signature.as_deref())
 }
 
 /** 已廢棄：前端不再根據訂單號產生授權碼。 */

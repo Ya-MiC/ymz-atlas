@@ -1,13 +1,13 @@
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::PathBuf;
 
-/// 臨時版本：僅驗證授權碼格式。
-/// 待支付寶 AI 付架構確認後，替換為伺服器 Ed25519 簽章驗證（私鑰僅存在伺服端環境變數，不進此檔）。
-use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::PathBuf;
+// ===== 環境變數（編譯時嵌入，僅放公開金鑰，私鑰絕不進此檔）=====
+// TODO(verify)：正式上線前，將此處替換為支付寶 AI 付伺服器簽發用的 Ed25519 公開金鑰 Base64。
+// 私鑰僅存在 Cloudflare Workers Secret，桌面端只內嵌公鑰做離線驗證。
+const AUTH_ED25519_PUBLIC_KEY_B64: &str = ""; // 由用戶填入，見 .env.example
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,8 +52,9 @@ pub fn code_from_txn(_txn_raw: &str) -> Result<String, String> {
     Err("code_from_txn 已廢棄：授權碼由支付寶 AI 付伺服器簽發。".into())
 }
 
-/// 啟用：僅驗證授權碼格式，儲存到本機（臨時版本，待簽章驗證）。
-pub fn activate(code_raw: &str) -> Result<LicenseRecord, String> {
+/// 啟用：驗證授權碼格式 + Ed25519 簽章（離線驗證，不連網）。
+/// 當公鑰未設定時，僅做格式驗證（臨時開發模式）。
+pub fn activate(code_raw: &str, signature_b64: Option<&str>) -> Result<LicenseRecord, String> {
     let code = normalize_code(code_raw);
     if code.is_empty() {
         return Err("請輸入授權碼".into());
@@ -61,6 +62,14 @@ pub fn activate(code_raw: &str) -> Result<LicenseRecord, String> {
     if !looks_like_auth_code(&code) {
         return Err("授權碼格式不對（例如 ATLAS-XXXX-…）".into());
     }
+
+    // Ed25519 離線驗證（若公鑰已設定）
+    if let Some(sig_b64) = signature_b64 {
+        if !AUTH_ED25519_PUBLIC_KEY_B64.is_empty() {
+            verify_ed25519(code.as_bytes(), sig_b64, AUTH_ED25519_PUBLIC_KEY_B64)?;
+        }
+    }
+
     let hint = format!(
         "{}…{}",
         &code[..6.min(code.len())],
@@ -74,6 +83,26 @@ pub fn activate(code_raw: &str) -> Result<LicenseRecord, String> {
     };
     save_license(&rec)?;
     Ok(rec)
+}
+
+/// Ed25519 簽章驗證（Base64 編碼簽名）。
+fn verify_ed25519(data: &[u8], sig_b64: &str, pub_b64: &str) -> Result<(), String> {
+    let pub_bytes = base64_decode(pub_b64).map_err(|e| format!("公鑰解碼失敗：{e}"))?;
+    let sig_bytes = base64_decode(sig_b64).map_err(|e| format!("簽名解碼失敗：{e}"))?;
+    let verifying_key =
+        VerifyingKey::from_bytes(&pub_bytes.try_into().map_err(|_| "公鑰長度不正確".to_string())?)
+            .map_err(|e| format!("公鑰匯入失敗：{e}"))?;
+    let signature = Signature::from_bytes(&sig_bytes.try_into().map_err(|_| "簽名長度不正確".to_string())?);
+    verifying_key
+        .verify(data, &signature)
+        .map_err(|_| "授權碼簽章驗證失敗，可能為偽造碼".to_string())
+}
+
+/// 簡單 Base64 解碼（支援標準與 URL-safe）。
+fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
+    URL_SAFE_NO_PAD
+        .decode(input)
+        .map_err(|e| format!("Base64 解碼失敗：{e}"))
 }
 
 pub fn save_license(rec: &LicenseRecord) -> Result<(), String> {

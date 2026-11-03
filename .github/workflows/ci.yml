@@ -45,11 +45,11 @@ jobs:
           releaseBody: |
             ## 下載後怎麼用
             1. 安裝本頁 Assets 裡的 Windows 安裝包（.msi / .exe）
-            2. PayPal 付 $0.99（cao417090217@gmail.com）
-            3. 用 Transaction ID 在 https://ya-mic.github.io/ymz-atlas/redeem.html 生成兌換碼
-            4. 打開軟體貼上訂單號啟用
+            2. 支付寶 AI 付 ¥0.01（官方授權，金額由伺服器固定）
+            3. 取得授權碼後，在 https://ya-mic.github.io/ymz-atlas/authorize.html 查看說明
+            4. 打開軟體貼上授權碼啟用（離線驗證，不連網上傳使用者資料）
 
-            含：星雲圖 · 樹圖 · 等高線
+            含：星雲圖 · 樹圖 · 等高線 · 像素MV · 筆記
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: false

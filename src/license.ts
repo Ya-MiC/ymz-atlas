@@ -1,33 +1,16 @@
-/** 與 Rust license.rs / website/redeem.html 同一算法 */
-const SECRET = "ymz.atlas.paypal.v1.yanmingzhanzhen.0.99";
+/** 與 Rust license.rs 保持一致（臨時版本，待支付寶 AI 付架構確認後替換為伺服器簽章驗證） */
 
-function normalizeTxn(input: string): string {
-  return input.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+function normalizeCode(input: string): string {
+  return input.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
 }
 
-export function looksLikePaypalTxn(txn: string): boolean {
-  const t = normalizeTxn(txn);
-  return t.length >= 15 && t.length <= 22 && /^[A-Z0-9]+$/.test(t);
+export function looksLikeAuthCode(code: string): boolean {
+  const c = normalizeCode(code);
+  return c.startsWith("ATLAS-") && c.length >= 20 && /^ATLAS-[A-Z0-9-]+$/.test(c);
 }
 
-async function sha256Hex(message: string): Promise<string> {
-  const data = new TextEncoder().encode(message);
-  const dig = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(dig)].map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
-}
-
-export async function codeFromTxn(txnRaw: string): Promise<string> {
-  const txn = normalizeTxn(txnRaw);
-  if (!looksLikePaypalTxn(txn)) {
-    throw new Error("PayPal 訂單號格式不對（Transaction ID，通常 15–22 位英數）");
-  }
-  const hex = await sha256Hex(`${SECRET}|${txn}`);
-  const h = hex.slice(0, 20);
-  return `ATLAS-${h.slice(0, 4)}-${h.slice(4, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}`;
-}
-
-export function normalizeCode(code: string): string {
-  return code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+export function normalizeCodeExport(code: string): string {
+  return normalizeCode(code);
 }
 
 const LS_KEY = "ymz-atlas-license";
@@ -35,7 +18,7 @@ const LS_KEY = "ymz-atlas-license";
 export type LicenseRecord = {
   activatedAt: number;
   source: string;
-  txnHint: string;
+  codeHint: string;
   code: string;
 };
 
@@ -48,19 +31,19 @@ export function loadLocalLicense(): LicenseRecord | null {
   }
 }
 
-export async function activateLocal(txnRaw: string, codeRaw?: string): Promise<LicenseRecord> {
-  const expect = await codeFromTxn(txnRaw);
-  if (codeRaw && codeRaw.trim()) {
-    if (normalizeCode(codeRaw) !== expect) {
-      throw new Error("兌換碼與訂單號不匹配");
-    }
+export async function activateLocal(_txnRaw?: string, codeRaw?: string): Promise<LicenseRecord> {
+  if (!codeRaw || !codeRaw.trim()) {
+    throw new Error("請輸入授權碼");
   }
-  const txn = normalizeTxn(txnRaw);
+  const code = normalizeCode(codeRaw);
+  if (!looksLikeAuthCode(code)) {
+    throw new Error("授權碼格式不對（例如 ATLAS-XXXX-…）");
+  }
   const rec: LicenseRecord = {
     activatedAt: Date.now(),
-    source: "paypal-txn",
-    txnHint: `${txn.slice(0, 4)}…${txn.slice(-4)}`,
-    code: expect,
+    source: "alipay-vibe-pay",
+    codeHint: `${code.slice(0, 6)}…${code.slice(-6)}`,
+    code,
   };
   localStorage.setItem(LS_KEY, JSON.stringify(rec));
   return rec;

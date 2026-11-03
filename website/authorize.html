@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>授權碼 · 星圖 Atlas · 支付寶 AI 付 ¥0.01</title>
+<style>
+  :root { --bg:#191C29; --surface:#1E3029; --accent:#9FA98F; --ink:#E2E4ED; --muted:#9aa0b0; --on:#191C29; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; font-family:"Segoe UI","Microsoft YaHei",sans-serif;
+    background:radial-gradient(900px 400px at 10% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent), var(--bg); color:var(--ink); }
+  .card { width:min(520px,calc(100% - 32px)); background:var(--surface); border-radius:16px; padding:28px; border:1px solid #ffffff22; }
+  h1 { font-size:20px; margin:0 0 8px; }
+  p { color:var(--muted); font-size:13px; line-height:1.6; }
+  .pill { display:inline-block; margin-bottom:14px; border:1px solid color-mix(in srgb,var(--accent) 40%,transparent); background:color-mix(in srgb,var(--accent) 14%,transparent); color:var(--accent); border-radius:999px;padding:6px 12px;font-size:12px;font-weight:650; }
+  .warn { margin-top:14px; padding:12px; border-radius:10px; background:color-mix(in srgb,var(--accent) 12%,transparent); border:1px solid var(--line); font-size:12px; color:var(--muted); }
+  .row { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  button, a.btn { min-height:44px; padding:0 16px; border-radius:999px; border:none; font-weight:650; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+  button { background:var(--accent); color:var(--on); }
+  a.btn { background:transparent; color:var(--ink); border:1px solid #ffffff33; }
+  .codebox { margin-top:12px; padding:12px; border-radius:10px; background:var(--bg); word-break:break-all; font-family:Consolas,monospace; font-size:14px; min-height:24px; border:1px dashed #ffffff22; color:var(--muted); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="pill">支付寶 AI 付 · ¥0.01 買斷 · 晏銘湛箴</div>
+    <h1>授權碼</h1>
+    <p>請先完成支付寶 AI 付 ¥0.01 購買（金額由伺服器固定，不接受客戶端篡改）。付款完成後，從支付寶頁面取得 <b>授權碼</b>，貼回「星圖 Atlas」桌面應用即可啟用。</p>
+    <div class="warn"><b>注意：</b>本頁面僅展示購買與說明，授權碼由伺服器簽發後離線驗證，不會在本頁面生成，也不會上傳任何使用者資料。</div>
+    <div class="row">
+      <a class="btn" href="https://aipay.alipay.com/products/vibe-pay" target="_blank" rel="noreferrer">支付寶 AI 付 ¥0.01 購買</a>
+      <a class="btn" href="./" target="_blank" rel="noreferrer">回官網</a>
+      <a class="btn" href="https://github.com/Ya-MiC/ymz-atlas/releases" target="_blank" rel="noreferrer">下載安裝包</a>
+    </div>
+    <div class="codebox" id="code">ATLAS-————</div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">授權碼範例格式：ATLAS-XXXX-XXXX-XXXX-XXXX-XXXX（實際碼由伺服器簽發）</p>
+  </div>
+</body>
+</html>

@@ -51,7 +51,7 @@ fn get_status(state: State<'_, AppState>) -> serde_json::Value {
         "licensed": license::is_licensed(),
         "product": "星圖 Atlas",
         "brand": "晏銘湛箴",
-        "priceUsd": "0.99",
+        "priceCny": "0.01",
     })
 }
 
@@ -88,13 +88,14 @@ fn license_status() -> serde_json::Value {
 }
 
 #[tauri::command]
-fn license_preview_code(txn: String) -> Result<String, String> {
-    license::code_from_txn(&txn)
+fn license_activate(code: String) -> Result<LicenseRecord, String> {
+    license::activate(&code)
 }
 
+/** 已廢棄：前端不再根據訂單號產生授權碼。 */
 #[tauri::command]
-fn license_activate(txn: String, code: Option<String>) -> Result<LicenseRecord, String> {
-    license::activate(&txn, code.as_deref())
+fn license_preview_code(_txn: String) -> Result<String, String> {
+    Err("apiLicensePreview 已廢棄：授權碼由支付寶 AI 付伺服器簽發。".into())
 }
 
 fn startup_scan(app: AppHandle) {

@@ -1,26 +1,25 @@
 # 星圖 Atlas
 
 本機資料宇宙：**星雲圖 · 樹圖 · 等高線**  
-Vue 3 + Tauri 2 + Rust · **$0.99 買斷** · PayPal：`cao417090217@gmail.com`
+Vue 3 + Tauri 2 + Rust · **¥0.01 買斷** · 支付寶 AI 付（一次買斷）
 
 | | |
 |---|---|
 | 官網（含下載引導） | https://ya-mic.github.io/ymz-atlas/ |
-| 兌換碼頁 | https://ya-mic.github.io/ymz-atlas/redeem.html |
+| 授權頁 | https://ya-mic.github.io/ymz-atlas/authorize.html |
 | 下載 exe / msi | https://github.com/Ya-MiC/ymz-atlas/releases/latest |
 | 源碼 | https://github.com/Ya-MiC/ymz-atlas |
 
-## 使用者：付款 → 兌換 → 下載 → 啟用
+## 使用者：付款 → 授權 → 下載 → 啟用
 
-1. **付款** [PayPal $0.99](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=cao417090217%40gmail.com&item_name=Atlas%20Official%20Build%20v0.1&amount=0.99&currency_code=USD)  
-2. 收據複製 **Transaction ID**（訂單號）  
-3. 打開 [兌換頁](https://ya-mic.github.io/ymz-atlas/redeem.html) 生成 `ATLAS-…` 兌換碼（可保存）  
-4. 到 [Releases](https://github.com/Ya-MiC/ymz-atlas/releases/latest) 下載 **Windows 安裝包（.exe / .msi）** 並安裝  
-5. 打開軟體，貼上**訂單號** → 自動算出兌換碼 → **啟用**
+1. **付款** [支付寶 AI 付 ¥0.01]()（支付寶掃碼，金額由伺服器固定為 ¥0.01，不接受客戶端篡改）  
+2. 付款完成後取得 **授權碼**（伺服器簽發，離線驗證）  
+3. 到 [Releases](https://github.com/Ya-MiC/ymz-atlas/releases/latest) 下載 **Windows 安裝包（.exe / .msi）** 並安裝  
+4. 打開軟體，貼上**授權碼** → 離線驗證 → **啟用**
 
-1.x **免費更新**。源碼 MIT；付費購買官方構建與維護。
+1.x **免費更新**。源碼 MIT；付費購買官方構建與授權金鑰。
 
-PayPal 收款準備說明：[`docs/PAYPAL.md`](docs/PAYPAL.md)
+支付寶收款說明：[`docs/ALIPAY.md`](docs/ALIPAY.md) （建立中，TODO(verify)：接入文檔參數待確認）
 
 ## 開發者
 
@@ -30,7 +29,7 @@ cd ymz-atlas
 pnpm install --config.dangerouslyAllowAllBuilds=true
 pnpm tauri dev          # 需要 VS C++ Build Tools + WebView2
 pnpm tauri build        # 產出 exe/msi
-node scripts/gen-license.mjs <PayPal交易號>
+# TODO(verify): 支付寶 AI 付沙箱授權碼簽發腳本，待官方文檔確認後補上
 ```
 
 請在 **NTFS** 磁碟開發（exFAT 會讓 pnpm 失敗）。

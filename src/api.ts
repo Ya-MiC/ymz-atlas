@@ -162,17 +162,17 @@ export async function apiLicenseStatus(): Promise<{ licensed: boolean; record?: 
   return invoke("license_status");
 }
 
-export async function apiLicenseActivate(txn: string, code?: string): Promise<LicenseRecord> {
-  if (!isTauri()) return activateLocal(txn, code);
-  return invoke<LicenseRecord>("license_activate", { txn, code: code || null });
+export async function apiLicenseActivate(code: string): Promise<LicenseRecord> {
+  if (!isTauri()) {
+    // 前端模式：直接驗證格式，不連網
+    return activateLocal(undefined, code);
+  }
+  return invoke<LicenseRecord>("license_activate", { code: code || null });
 }
 
-export async function apiLicensePreview(txn: string): Promise<string> {
-  if (!isTauri()) {
-    const { codeFromTxn } = await import("./license");
-    return codeFromTxn(txn);
-  }
-  return invoke<string>("license_preview_code", { txn });
+/** 已廢棄：前端不再根據訂單號產生授權碼。保留以供未來參考。 */
+export async function apiLicensePreview(_txn: string): Promise<string> {
+  throw new Error("apiLicensePreview 已廢棄：授權碼由支付寶 AI 付伺服器簽發。");
 }
 
 export function fmtSize(b: number) {

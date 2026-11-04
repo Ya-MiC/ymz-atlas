@@ -1,9 +1,0 @@
-name = "ymz-atlas-pay"
-main = "src/index.ts"
-compatibility_date = "2026-11-03"
-
-[vars]
-ATLAS_PRICE_CNY = "0.01"
-AUTH_ED25519_PUBLIC_KEY = ""  # 桌面端離線驗證用公鑰，可公開
-
-[[observability.enable]]

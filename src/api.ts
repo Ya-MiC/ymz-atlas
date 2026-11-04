@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { activateLocal, loadLocalLicense, type LicenseRecord } from "./license";
 
 export type Totals = {
   dirs: number;
@@ -152,27 +151,6 @@ export async function apiGetVault(): Promise<Vault> {
 export async function apiSaveVault(vault: Vault): Promise<Vault> {
   if (!isTauri()) return vault;
   return invoke<Vault>("save_vault_cmd", { vault });
-}
-
-export async function apiLicenseStatus(): Promise<{ licensed: boolean; record?: LicenseRecord }> {
-  if (!isTauri()) {
-    const r = loadLocalLicense();
-    return r ? { licensed: true, record: r } : { licensed: false };
-  }
-  return invoke("license_status");
-}
-
-export async function apiLicenseActivate(txn: string, code?: string): Promise<LicenseRecord> {
-  if (!isTauri()) return activateLocal(txn, code);
-  return invoke<LicenseRecord>("license_activate", { txn, code: code || null });
-}
-
-export async function apiLicensePreview(txn: string): Promise<string> {
-  if (!isTauri()) {
-    const { codeFromTxn } = await import("./license");
-    return codeFromTxn(txn);
-  }
-  return invoke<string>("license_preview_code", { txn });
 }
 
 export function fmtSize(b: number) {

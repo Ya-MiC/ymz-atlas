@@ -14,9 +14,6 @@ import {
   apiGetSnapshot,
   apiGetStatus,
   apiGetVault,
-  apiLicenseActivate,
-  apiLicensePreview,
-  apiLicenseStatus,
   apiRescan,
   apiSaveVault,
   fmtNum,
@@ -25,11 +22,6 @@ import {
   type Vault,
 } from "./api";
 
-const licensed = ref(false);
-const txnInput = ref("");
-const codeInput = ref("");
-const previewCode = ref("");
-const licenseError = ref("");
 const view = ref<"nebula" | "tree" | "contour" | "admin" | "mv" | "note">("nebula");
 const snapshot = ref<Snapshot | null>(null);
 const vault = reactive<Vault>({
@@ -257,43 +249,10 @@ function refreshContour() {
   });
 }
 
-async function refreshPreview() {
-  previewCode.value = "";
-  licenseError.value = "";
-  if (!txnInput.value.trim()) return;
-  try {
-    previewCode.value = await apiLicensePreview(txnInput.value.trim());
-    codeInput.value = previewCode.value;
-  } catch (e: any) {
-    licenseError.value = e?.message || String(e);
-  }
-}
-
-async function onActivate() {
-  licenseError.value = "";
-  busy.value = true;
-  try {
-    await apiLicenseActivate(txnInput.value.trim(), codeInput.value.trim() || undefined);
-    licensed.value = true;
-    statusText.value = "已啟用";
-    await loadAll();
-  } catch (e: any) {
-    licenseError.value = e?.message || String(e);
-  } finally {
-    busy.value = false;
-  }
-}
-
 async function loadAll() {
   busy.value = true;
   statusText.value = "讀取資料…";
   try {
-    const lic = await apiLicenseStatus();
-    licensed.value = !!lic.licensed;
-    if (!licensed.value) {
-      statusText.value = "等待兌換啟用";
-      return;
-    }
     const [s, v, st] = await Promise.all([apiGetSnapshot(), apiGetVault(), apiGetStatus()]);
     snapshot.value = s;
     Object.assign(vault, v);
@@ -393,31 +352,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="!licensed" class="shell gate">
-    <div class="card gate-card">
-      <h1>◈ 星圖 Atlas</h1>
-      <p class="hint">$0.99 買斷 · PayPal 訂單號 → 兌換碼 → 啟用</p>
-      <ol class="steps">
-        <li>PayPal 支付 $0.99（收款 <code>cao417090217@gmail.com</code>）</li>
-        <li>打開收據，複製 <b>Transaction ID</b>（訂單號）</li>
-        <li>貼上後自動生成兌換碼，點啟用</li>
-      </ol>
-      <label class="field"><span>PayPal 訂單號</span>
-        <input v-model="txnInput" placeholder="例如 5AB12345678901234" @change="refreshPreview" @blur="refreshPreview" />
-      </label>
-      <label class="field"><span>兌換碼</span>
-        <input v-model="codeInput" placeholder="ATLAS-XXXX-…" readonly />
-      </label>
-      <p v-if="previewCode" class="hint">已生成：<code>{{ previewCode }}</code>（可複製保存）</p>
-      <p v-if="licenseError" class="err">{{ licenseError }}</p>
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn" :disabled="busy || !txnInput.trim()" @click="onActivate">啟用</button>
-        <a class="btn ghost" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=cao417090217%40gmail.com&item_name=Atlas%20Official%20Build%20v0.1&amount=0.99&currency_code=USD" target="_blank" rel="noreferrer">去 PayPal 購買 $0.99</a>
-        <a class="btn ghost" href="https://ya-mic.github.io/ymz-atlas/redeem.html" target="_blank" rel="noreferrer">官網兌換頁</a>
-      </div>
-    </div>
-  </div>
-  <div v-else class="shell">
+  <div class="shell">
     <header class="topbar">
       <div class="brand">
         <span class="logo">◈</span>
